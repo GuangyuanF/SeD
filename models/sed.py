@@ -81,17 +81,19 @@ class SeD_P(nn.Module):
         """
         super().__init__()
 
-        kw = 4
-        padw = 1
+        kw = 4  #kernel_size
+
+        padw = 1    #padding
         # ss = [128, 64, 32, 31, 30]  # PatchGAN's spatial size
         # cs = [64, 128, 256, 512, 1]  # PatchGAN's channel size
 
         norm = spectral_norm
-
+        
         self.lrelu = nn.LeakyReLU(0.2, True)
         self.conv_first = nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw)
 
         self.conv1 = norm(nn.Conv2d(ndf * 1, ndf * 2, kernel_size=kw, stride=2, padding=padw, bias=use_bias))
+        #法将 x 向上舍入到最接近的整数
         upscale = math.ceil(64 / semantic_size)
         self.att1 = ModifiedSpatialTransformer(in_channels=semantic_dim, n_heads=nheads, d_head=dhead, context_dim=128, up_factor=upscale)
 
