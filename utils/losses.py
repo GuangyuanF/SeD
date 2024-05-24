@@ -21,39 +21,46 @@ class GANLoss(nn.Module):
 
     def get_target_label(self, input, target_is_real):
         """Get target label.
-
+        获得目标标签
         Args:
             input (Tensor): Input tensor.
-            target_is_real (bool): Whether the target is real or fake.
+            target_is_real (bool): Whether the target is real or fake.真假
 
         Returns:
             (bool | Tensor): Target tensor. Return bool for wgan, otherwise,
                 return Tensor.
+            返回wgan的bool值否则返回张量
         """
 
         target_val = (
             self.real_label_val if target_is_real else self.fake_label_val)
+        #返回一个与size大小相同的1填充的张量，× 标签个数
         return input.new_ones(input.size()) * target_val
+        
 
     def forward(self, input, target_is_real, is_disc=False):
         """
         Args:
             input (Tensor): The input for the loss module, i.e., the network
                 prediction.
-            target_is_real (bool): Whether the targe is real or fake.
+            损失模块的输入，即网络的预测
+            target_is_real (bool): Whether the targe is real or fake.判断标签真假
             is_disc (bool): Whether the loss for discriminators or not.
                 Default: False.
-
+            是否是鉴别器的loss，默认为否
         Returns:
             Tensor: GAN loss value.
+            返回GAN的损失值
         """
         target_label = self.get_target_label(input, target_is_real)
         loss = self.loss(input, target_label)
-        # loss_weight is always 1.0 for discriminators
+        # loss_weight is always 1.0 for discriminators 判别器的loss_weight为0
         return loss if is_disc else loss * self.loss_weight
         # return loss
 
-
+"""
+PerceptualVGG 感知损失VGG
+"""
 class PerceptualVGG(nn.Module):
 
     def __init__(self,
@@ -61,11 +68,13 @@ class PerceptualVGG(nn.Module):
                  vgg_type='vgg19',
                  use_input_norm=True):
         super().__init__()
+        #指定要从中提取特征的层的名称
         self.layer_name_list = layer_name_list
+        #确定是否对输入图像进行归一化处理
         self.use_input_norm = use_input_norm
 
-        # get vgg model and load pretrained vgg weight
-        # remove _vgg from attributes to avoid `find_unused_parameters` bug
+        # get vgg model and load pretrained vgg weight获取VGG并加载预训练的权重
+        # remove _vgg from attributes to avoid `find_unused_parameters` bug 从属性中移除_vgg以避免`find_unused_parameters`的bug
 
         assert vgg_type in ('vgg16', 'vgg19')
         if vgg_type == 'vgg16':
@@ -75,15 +84,15 @@ class PerceptualVGG(nn.Module):
 
         num_layers = max(map(int, layer_name_list)) + 1
         assert len(_vgg.features) >= num_layers
-        # only borrow layers that will be used from _vgg to avoid unused params
+        # only borrow layers that will be used from _vgg to avoid unused params仅从VGG中借用相应的层，避免未使用的参数
         self.vgg_layers = _vgg.features[:num_layers]
 
         if self.use_input_norm:
-            # the mean is for image with range [0, 1]
+            # the mean is for image with range [0, 1]图像的均值范围为[0,1]。
             self.register_buffer(
                 'mean',
                 torch.Tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
-            # the std is for image with range [-1, 1]
+            # the std is for image with range [-1, 1]图像的均值范围为[-1,1]。
             self.register_buffer(
                 'std',
                 torch.Tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
@@ -100,7 +109,7 @@ class PerceptualVGG(nn.Module):
         Returns:
             Tensor: Forward results.
         """
-
+        #标准化
         if self.use_input_norm:
             x = (x - self.mean) / self.std
         output = {}

@@ -138,9 +138,11 @@ class SeD_P(nn.Module):
         input = self.conv_last(input)
         return input
 
-
+"""
+融合了cnn，attention，short-cut，以捕获输入图像和语义特征中的空间和语义信息
+"""
 class SeD_U(nn.Module):
-
+    #num_feat 特征图数量，semantic_dim语义特征维度，semantic_size语义特征的空间大小
     def __init__(self, num_in_ch=3, num_feat=64, semantic_dim=1024, semantic_size=16, skip_connection=True, nheads=1, dhead=64):
         super(SeD_U, self).__init__()
         self.skip_connection = skip_connection
