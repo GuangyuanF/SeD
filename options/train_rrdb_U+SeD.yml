@@ -1,12 +1,15 @@
 # Overall settings
+#stage：当前阶段
 name: train_RRDB_U+SeD
 model_type: RRDB
 stage: train
+#手动种子设置
 manual_seed: 1
 
-# Model hyperparams
+# Model hyperparams模型超参数
 model:
   rrdb:
+  #输入输出通道
     in_nc: 3
     out_nc: 3
   swinir:
@@ -21,42 +24,62 @@ model:
     img_range: 1.
     upsampler: 'pixelshuffle'
     resi_connection: '1conv'
-
+#额外的模型组件
 model_ex:
+#层数
   layers: [3, 4, 6, 3]
+#是否与训练
   pretrained: True
   path: ~
+#输出维度
   output_dim: 1024
+#注意力头数
   heads: 32
 
+#判别器模型超参数
 model_d:
+#输入通道数
   num_in_ch: 3
+#特征图维度
   num_feat: 64
+#语义维度
   semantic_dim: 1024
+#语义特征大小
   semantic_size: 16
+#注意力头数
   nheads: 1
+#头维度
   dhead: 64
 
-# Optimizers
+# Optimizers主优化器设置
 optimizer:
+#学习率
   lr: !!float 1e-4
+#权重衰减
   weight_decay: 0
+#Adam优化器的beta（一阶和二阶矩估计的指数衰减率）
   betas: [0.9, 0.99]
 
+#判别器优化器的设置
 optimizer_d:
   lr: !!float 1e-4
   weight_decay: 0
   betas: [0.9, 0.99]
 
+#调度器（pytorch训练过程中自动调整learning rate）
 scheduler:
+#MultiStepLR（常见的学习率调整策略）在每个milestone时将lr×gamma
+#学习率衰减的伽马值和阶梯步数
   gamma: 0.5
+#阶梯步数
   milestones: [100000, 200000]
 
+#判别器学习率调度器设置
 scheduler_d:
   gamma: 0.5
   milestones: [100000, 200000]
 
-# Loss Weights
+# Loss Weights不同损失的权重
 loss_weights:
   loss_pix: 1.0  # pixel loss
   loss_p: 1.0  # perceptual loss
@@ -65,26 +88,38 @@ loss_weights:
 
 # Datasets
 datasets:
+#训练集设置
   train:
+  #上采样因子
     scale: 4
+  #patch大小
     patch_size: 64
+  #使用测试数据集
   test: 
     use_test: True
-
+#数据加载
 dataloader:
   train:
+  #批大小
     batch_size: 8
+  #线程数
     num_workers: 8
+  # CPU 中的 pageable memory （可分页内存）与 GPU 之间的交互，建立一个临时缓冲区（pinned memory）
     pin_memory: True
   test:
     batch_size: 1
     num_workers: 1
     pin_memory: True
 
-# Training
+# Training，训练设置
 train:
+#训练过程的当前步数
   current_step: 0
+#总训练步数
   total_step: 300000
+#每log_every记录一次
   log_every: 200
+#保存模型检查点的频率
   save_every: 5000
+#在测试数据集上评估模型的频率
   test_every: 5000
